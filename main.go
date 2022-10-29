@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/dchung117/chatbot_golang/handlers"
 	"github.com/joho/godotenv"
 	"github.com/shomali11/slacker"
 )
@@ -14,14 +15,15 @@ import (
 func printCommandEvents(analyticsChannel <-chan *slacker.CommandEvent) {
 	for event := range analyticsChannel {
 		fmt.Println("Command Events")
-		fmt.Sprintln("Timestamp", event.Timestamp)
-		fmt.Sprintln("Command", event.Command)
-		fmt.Sprintln("Parameters", event.Parameters)
-		fmt.Sprintln("Event", event.Event)
-		fmt.Sprintln()
+		fmt.Println("Timestamp", event.Timestamp)
+		fmt.Println("Command", event.Command)
+		fmt.Println("Parameters", event.Parameters)
+		fmt.Println("Event", event.Event)
+		fmt.Println()
 	}
 
 }
+
 func main() {
 	// load .env file
 	godotenv.Load(".env")
@@ -31,6 +33,13 @@ func main() {
 
 	// concurrent gooutine to print bot command events
 	go printCommandEvents(bot.CommandEvents())
+
+	// receive client message from slack
+	bot.Command("Q: <message>", &slacker.CommandDefinition{
+		Description: "Send any question to Wolfram",
+		Examples:    []string{"Who is the president of the United States"},
+		Handler:     handlers.HandleSlack,
+	})
 
 	// create new context, defer cancel after main process exits
 	ctx, cancel := context.WithCancel(context.Background())
